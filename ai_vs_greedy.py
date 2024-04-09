@@ -26,6 +26,7 @@ def load_agent(model_path, verbose=False):
 def agent_greedy_match(model_path, num_games, verbose=False, tree_tau=DET_TREE_TAU):
     player1 = 'ai'
     player2 = 'greedy'
+    player3 = 'greedy'
     win_count = { player1 : 0, player2 : 0 }
     model = load_agent(model_path)
 
@@ -34,26 +35,28 @@ def agent_greedy_match(model_path, num_games, verbose=False, tree_tau=DET_TREE_T
             utils.stress_message('Game {}'.format(i + 1))
 
         if player1 == 'ai':
-            game = Game(p1_type=player1, p2_type=player2, verbose=verbose, model1=model)
+            game = Game(p1_type=player1, p2_type=player2, p3_type=player3, verbose=verbose, model1=model)
         else:
-            game = Game(p1_type=player1, p2_type=player2, verbose=verbose, model2=model)
+            game = Game(p1_type=player1, p2_type=player2, p3_type=player3, verbose=verbose, model2=model)
 
         winner = game.start()
         if winner is not None:
             if winner == PLAYER_ONE:
                 win_count[player1] += 1
-            else:
+            elif winner == PLAYER_TWO:
                 win_count[player2] += 1
+            else:
+                win_count[player3] += 1
         # Swap
-        player1, player2 = player2, player1
+        player1, player2, player3 = player2, player3, player1
 
     if verbose:
         utils.stress_message('Agent wins {} games and Greedy wins {} games with total games {}'
             .format(win_count['ai'], win_count['greedy'], num_games))
 
-    if win_count['ai'] > win_count['greedy']:
+    if win_count['ai'] > win_count['greedy'] / 2:
         return model_path
-    elif win_count['greedy'] > win_count['ai']:
+    elif win_count['greedy'] / 2 > win_count['ai']:
         return 'greedy'
     else:
         return None

@@ -41,6 +41,7 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
     # Decide what model to use
     model = ResidualCNN()
     model2 = None
+    model3 = None
     if model_path is not None:
         print('Worker {}: loading model "{}"'.format(worker_id, model_path))
         model.load_weights(model_path)

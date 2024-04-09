@@ -25,16 +25,17 @@ def load_agent(model_path, model_num, verbose=False):
     return model
 
 
-def agent_match(model1_path, model2_path, num_games, verbose=False, tree_tau=DET_TREE_TAU, enforce_move_limit=False):
-    win_count = { PLAYER_ONE: 0, PLAYER_TWO: 0 }
+def agent_match(model1_path, model2_path, model3_path, num_games, verbose=False, tree_tau=DET_TREE_TAU, enforce_move_limit=False):
+    win_count = { PLAYER_ONE: 0, PLAYER_TWO: 0, PLAYER_THREE: 0 }
 
     model1 = load_agent(model1_path, 1, verbose)
     model2 = load_agent(model2_path, 2, verbose)
+    model3 = load_agent(model3_path, 3, verbose)
 
     for i in range(num_games):
         if verbose:
             utils.stress_message('Game {}'.format(i + 1))
-        game = Game(p1_type='ai', p2_type='ai', verbose=verbose, model1=model1, model2=model2, tree_tau=tree_tau)
+        game = Game(p1_type='ai', p2_type='ai', p3_type='ai', verbose=verbose, model1=model1, model2=model2, tree_tau=tree_tau)
         winner = game.start(enforce_move_limit=enforce_move_limit)
         if winner is not None:
             win_count[winner] += 1
@@ -42,24 +43,27 @@ def agent_match(model1_path, model2_path, num_games, verbose=False, tree_tau=DET
     if verbose:
         print('Agent "{}" wins {} matches'.format(model1_path, win_count[PLAYER_ONE]))
         print('Agent "{}" wins {} matches'.format(model2_path, win_count[PLAYER_TWO]))
+        print('Agent "{}" wins {} matches'.format(model2_path, win_count[PLAYER_THREE]))
 
-    # Return the winner by at least 55% win rate
-    if win_count[PLAYER_ONE] > int(0.55 * num_games):
+    # Return the winner by at least 35% win rate
+    if win_count[PLAYER_ONE] > int(0.35 * num_games):
         return model1_path
-    elif win_count[PLAYER_TWO] > int(0.55 * num_games):
+    elif win_count[PLAYER_TWO] > int(0.35 * num_games):
         return model2_path
+    elif win_count[PLAYER_THREE] > int(0.35 * num_games):
+        return model3_path
     else:
         return None
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print('Usage: python3 ai-vis-ai.py <model1_path> <model2_path> [<tree tau>]')
+    if len(sys.argv) < 4:
+        print('Usage: python3 ai-vis-ai.py <model1_path> <model2_path> <model3_path> [<tree tau>]')
         exit()
 
-    if len(sys.argv) == 3:
-        agent_match(sys.argv[1], sys.argv[2], 1, True)
+    if len(sys.argv) == 4:
+        agent_match(sys.argv[1], sys.argv[2], sys.argv[3], 1, True)
     else:
-        tree_tau = float(sys.argv[3])
+        tree_tau = float(sys.argv[4])
         utils.stress_message('Using tree_tau {} initially'.format(tree_tau))
-        agent_match(sys.argv[1], sys.argv[2], 1, True, tree_tau)
+        agent_match(sys.argv[1], sys.argv[2], sys.argv[3], 1, True, tree_tau)

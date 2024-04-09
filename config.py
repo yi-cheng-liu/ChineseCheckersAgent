@@ -2,6 +2,7 @@
 # Fixed 2 player
 PLAYER_ONE = 1
 PLAYER_TWO = 2
+PLAYER_THREE = 3
 
 ''' Board/Game '''
 ROWS_OF_CHECKERS = 3
@@ -14,6 +15,7 @@ PLAYER_ONE_DISTANCE_OFFSET = 70
 PLAYER_TWO_DISTANCE_OFFSET = -14
 TOTAL_HIST_MOVES = 16                       # Total number of history moves to keep for checking repetitions
 UNIQUE_DEST_LIMIT = 3
+NUM_PLAYERS = 3
 
 ''' Dirichlet Noise '''
 DIRICHLET_ALPHA = 0.03                      # Alpha for ~ Dir(), assuming symmetric Dirichlet distribution

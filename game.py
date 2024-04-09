@@ -6,13 +6,14 @@ from board import Board
 from config import *
 
 class Game:
-    def __init__(self, p1_type=None, p2_type=None, verbose=True, model1=None, model2=None, tree_tau=DET_TREE_TAU):
+    def __init__(self, p1_type=None, p2_type=None, p3_type=None, verbose=True, model1=None, model2=None, model3=None, tree_tau=DET_TREE_TAU):
 
-        if p1_type is None or p2_type is None:
-            p1_type, p2_type = self.get_player_types()
+        if p1_type is None or p2_type is None or p3_type is None:
+            p1_type, p2_type, p3_type = self.get_player_types()
 
         p1_type = p1_type[0].lower()
         p2_type = p2_type[0].lower()
+        p3_type = p3_type[0].lower()
 
         if p1_type == 'h':
             self.player_one = HumanPlayer(player_num=1)
@@ -28,8 +29,16 @@ class Game:
         else:
             self.player_two = AiPlayer(player_num=2, model=(model1 if model2 is None else model2), tree_tau=tree_tau)
 
+        if p3_type == 'h':
+            self.player_three = HumanPlayer(player_num=3)
+        elif p3_type == 'g':
+            self.player_three = GreedyPlayer(player_num=3)
+        else:
+            self.player_three = AiPlayer(player_num=3, model=(model1 if model3 is None else model3), tree_tau=tree_tau)
+
         self.cur_player = self.player_one
         self.next_player = self.player_two
+        self.last_player = self.player_three
         self.verbose = verbose
         self.board = Board()
 
@@ -48,11 +57,17 @@ class Game:
                 break
             print('Invalid input. Try again.')
 
-        return p1_type, p2_type
+        while 1:
+            p3_type = input('Enter player type of player 2 ([H]uman/[G]reedyRobot/[A]I): ')
+            if p3_type[0].lower() in TYPES_OF_PLAYERS:
+                break
+            print('Invalid input. Try again.')            
+
+        return p1_type, p2_type, p3_type
 
 
     def swap_players(self):
-        self.cur_player, self.next_player = self.next_player, self.cur_player
+        self.cur_player, self.next_player, self.last_player = self.next_player, self.last_player, self.cur_player
 
 
     def start(self, enforce_move_limit=False):
@@ -107,8 +122,9 @@ if __name__ == '__main__':
     from collections import Counter
     wincount = Counter()
     for i in range(10000):
-        game = Game(p1_type='greedy', p2_type='greedy', verbose=False)
+        game = Game(p1_type='greedy', p2_type='greedy', p3_type='greedy', verbose=False)
         game.player_two = GreedyPlayer(player_num=2, stochastic=True)
+        game.player_three = GreedyPlayer(player_num=3, stochastic=True)
         wincount[game.start()] += 1
     print(wincount)
 

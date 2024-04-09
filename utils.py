@@ -37,11 +37,13 @@ def get_p1_winloss_reward(board, winner=None):
     """
     winner = winner or board.check_win()
     if winner == PLAYER_ONE:
-        return REWARD['win']
+        return [REWARD['win'], REWARD['lose'], REWARD['lose']]
     elif winner == PLAYER_TWO:
-        return REWARD['lose']
+        return [REWARD['lose'], REWARD['win'], REWARD['lose']]
+    elif winner == PLAYER_THREE:
+        return [REWARD['lose'], REWARD['lose'], REWARD['win']]    
     else:
-        return REWARD['draw']
+        return [REWARD['draw'], REWARD['draw'], REWARD['draw']]
 
 
 

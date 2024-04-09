@@ -15,12 +15,13 @@ class GreedyDataGenerator:
     def __init__(self, randomised=False, random_start=False):
         self.cur_player = GreedyPlayer(player_num=1)
         self.next_player = GreedyPlayer(player_num=2)
+        self.last_player = GreedyPlayer(player_num=3)
         self.randomised = randomised
         self.random_start = random_start
         self.board = Board(randomised=randomised)
 
     def swap_players(self):
-        self.cur_player, self.next_player = self.next_player, self.cur_player
+        self.cur_player, self.next_player, self.last_player = self.next_player, self.last_player, self.cur_player
 
     def generate_play(self):
         play_history = []
