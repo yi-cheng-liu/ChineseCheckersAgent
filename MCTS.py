@@ -31,8 +31,8 @@ class Edge:
 
         self.stats = {
             'N': 0,
-            'W': 0,
-            'Q': 0,
+            'W': [0,0,0],
+            'Q': [0,0,0],
             'P': prior
         }
 
@@ -60,7 +60,7 @@ class MCTS:
 
             for edge in currentNode.edges:
                 U = self.cpuct * edge.stats['P'] * np.sqrt(N_sum) / (1. + edge.stats['N'])
-                QU = edge.stats['Q'] + U
+                QU = edge.stats['Q'][currentNode.currPlayer] + U
 
                 if QU > maxQU:
                     maxQU = QU
@@ -83,7 +83,11 @@ class MCTS:
             for edge in breadcrumbs:
                 # If a win state occurred, then then leafNode must be the turn of the lost player
                 # Therefore when backing up, the leafNode player gets negative reward
-                direction = -1 if edge.currPlayer == leafNode.currPlayer else 1
+                direction = [-1,-1,-1]
+                index = edge.currentPlayer - 2
+                if index == -1:
+                    index = 2
+                direction[index] = 1
                 edge.stats['N'] += 1
                 edge.stats['W'] += REWARD['win'] * direction
                 edge.stats['Q'] = edge.stats['W'] / float(edge.stats['N'])  # Use float() for python2 compatibility
@@ -99,7 +103,7 @@ class MCTS:
             for destination_pos in action_set:
                 # Get index in neural net output vector
                 prior_index = utils.encode_checker_index(checker_id, destination_pos)
-                next_player = PLAYER_ONE + PLAYER_TWO - leafNode.currPlayer
+                next_player = (leafNode.currPlayer + 1) % 3
                 # Set up new state of game
                 next_state = copy.deepcopy(leafNode.state)
                 next_state.place(leafNode.currPlayer, checker_pos, destination_pos)
@@ -112,9 +116,8 @@ class MCTS:
         for edge in breadcrumbs:
             # The value is from the perspective of leafNode player
             # so the direction is positive for the leafNode player
-            direction = 1 if edge.currPlayer == leafNode.currPlayer else -1
             edge.stats['N'] += 1
-            edge.stats['W'] += v_evaluated * direction
+            edge.stats['W'] += v_evaluated
             edge.stats['Q'] = edge.stats['W'] / float(edge.stats['N']) # Use float() for python2 compatibility
 
 
