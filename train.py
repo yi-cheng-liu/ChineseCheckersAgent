@@ -12,6 +12,8 @@ from config import *
 from model import *
 from MCTS import *
 from selfplay import selfplay
+# from tensorflow.keras.backend import set_session
+import tensorflow as tf
 
 """
 This file coordinates training procedure, including:
@@ -26,13 +28,20 @@ This file coordinates training procedure, including:
 
 def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
     # Load the current model in the worker only for prediction and set GPU limit
-    import tensorflow as tf
-    tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
-    session = tf.Session(config=tf_config)
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as e:
+            print(e)
+    # import tensorflow as tf
+    # tf_config = tf.ConfigProto()
+    # tf_config.gpu_options.allow_growth = True
+    # session = tf.Session(config=tf_config)
 
-    from keras.backend.tensorflow_backend import set_session
-    set_session(session=session)
+    # from keras.backend.tensorflow_backend import set_session
+    # set_session(session=session)
 
     # Re-seed the generators: since the RNG was copied from parent process
     np.random.seed()        # None seed to source from /dev/urandom
@@ -108,13 +117,20 @@ def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model
 
 def train(model_path, board_x, pi_y, v_y, data_retention, version):
     # Set TF gpu limit
-    import tensorflow as tf
-    tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
-    session = tf.Session(config=tf_config)
+    # import tensorflow as tf
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as e:
+            print(e)
+    # tf_config = tf.ConfigProto()
+    # tf_config.gpu_options.allow_growth = True
+    # session = tf.Session(config=tf_config)
 
-    from keras.backend.tensorflow_backend import set_session
-    set_session(session=session)
+    # from keras.backend.tensorflow_backend import set_session
+    # set_session(session=session)
 
     np.random.seed()
     random.seed()
@@ -149,13 +165,20 @@ def train(model_path, board_x, pi_y, v_y, data_retention, version):
 
 def evaluate(worker_id, best_model, cur_model, num_games):
     # Load the current model in the worker only for prediction and set GPU limit
-    import tensorflow as tf
-    tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
-    session = tf.Session(config=tf_config)
+    # import tensorflow as tf
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as e:
+            print(e)
+    # tf_config = tf.ConfigProto()
+    # tf_config.gpu_options.allow_growth = True
+    # session = tf.Session(config=tf_config)
 
-    from keras.backend.tensorflow_backend import set_session
-    set_session(session=session)
+    # from keras.backend.tensorflow_backend import set_session
+    # set_session(session=session)
 
     # Re-seed the generators: since the RNG was copied from parent process
     np.random.seed()        # None seed to source from /dev/urandom
