@@ -24,7 +24,7 @@ This file coordinates training procedure, including:
 """
 
 
-def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
+def generate_self_play(worker_id, model_path, num_self_play, model2_path=None, model3_path=None):
     # Load the current model in the worker only for prediction and set GPU limit
     import tensorflow as tf
     tf_config = tf.ConfigProto()
@@ -54,13 +54,20 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
             print('Worker {}: 2nd model load successful'.format(worker_id))
         else:
             print ('Worker {}: Model2 is None; using Model1 to generate selfplays'.format(worker_id))
+        if model3_path is not None:
+            print('Worker {}: loading 2nd model "{}"'.format(worker_id, model2_path))
+            model3 = ResidualCNN()
+            model3.load_weights(model3_path)
+            print('Worker {}: 2nd model load successful'.format(worker_id))
+        else:
+            print ('Worker {}: Model2 is None; using Model1 to generate selfplays'.format(worker_id))
     else:
         print('Worker {}: using un-trained model'.format(worker_id))
 
     # Worker start generating self plays according to their workload
     worker_result = []
     for i in range(num_self_play):
-        play_history, p1_reward = selfplay(model, model2, randomised=False)
+        play_history, p1_reward = selfplay(model, model2, model3, randomised=False)
         if play_history is not None and p1_reward is not None:
             worker_result.append((play_history, p1_reward))
         print('Worker {}: generated {} self-plays'.format(worker_id, len(worker_result)))
@@ -69,7 +76,7 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
 
 
 
-def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model2_path=None):
+def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model2_path=None, model3_path=None):
     # Process pool for parallelism
     process_pool = mp.Pool(processes=num_workers)
     work_share = num_self_play // num_workers
@@ -83,7 +90,7 @@ def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model
         # Send workers
         result_async = process_pool.apply_async(
             generate_self_play,
-            args=(i + 1, model_path, work_share, model2_path))
+            args=(i + 1, model_path, work_share, model2_path, model3_path))
         worker_results.append(result_async)
 
     try:

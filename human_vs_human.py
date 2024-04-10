@@ -6,5 +6,5 @@ want to play human-vs-human game
 """
 
 if __name__ == '__main__':
-    human_game = Game(p1_type='human', p2_type='human')
+    human_game = Game(p1_type='human', p2_type='human', p3_type='human')
     human_game.start()
