@@ -18,18 +18,14 @@ def find_version_given_filename(filename):
 
     return int(matches.group(2))
 
-
 def get_model_path_from_version(version):
     return '{}/{}{:0>4}.h5'.format(SAVE_MODELS_DIR, MODEL_PREFIX, version)
-
 
 def cur_time():
     return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-
 def stress_message(message, extra_newline=False):
     print('{2}{0}\n{1}\n{0}{2}'.format('='*len(message), message, '\n' if extra_newline else ''))
-
 
 def get_p1_winloss_reward(board, winner=None):
     """
@@ -43,8 +39,6 @@ def get_p1_winloss_reward(board, winner=None):
     else:
         return REWARD['draw']
 
-
-
 def save_train_data(board_x, pi_y, v_y, version):
     ''' Write current iteration training data to disk '''
     if not os.path.exists(SAVE_TRAIN_DATA_DIR):
@@ -54,8 +48,6 @@ def save_train_data(board_x, pi_y, v_y, version):
         H.create_dataset('board_x', data=board_x)
         H.create_dataset('pi_y', data=pi_y)
         H.create_dataset('v_y', data=v_y)
-
-
 
 def convert_to_train_data(self_play_games):
     ''' Return python lists containing training data '''
@@ -72,8 +64,6 @@ def convert_to_train_data(self_play_games):
 
 
     return board_x, pi_y, v_y
-
-
 
 def augment_train_data(board_x, pi_y, v_y):
     ''' Augment training data by horizontal flipping of the board '''
@@ -97,8 +87,6 @@ def augment_train_data(board_x, pi_y, v_y):
 
     return board_x, pi_y, v_y   # Return the same references
 
-
-
 def to_model_input(board, cur_player):
     """
     Input:
@@ -113,26 +101,22 @@ def to_model_input(board, cur_player):
     new_board = board.board
     # get history moves
     hist_moves = board.hist_moves
+
     # get opponent player
-    op_player = PLAYER_ONE + PLAYER_TWO - cur_player
-
     # firstly, construct the current state layers
-    op_layer = np.copy(new_board[:, :, 0])
-    cur_layer = np.copy(new_board[:, :, 0])
-    # construct layer for current player
-    np.putmask(cur_layer, cur_layer != cur_player, 0)
-    for checker_id, checker_pos in board.checkers_pos[cur_player].items():
-        cur_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
-    # construct layer for opponent player
-    np.putmask(op_layer, op_layer != op_player, 0)
-    for checker_id, checker_pos in board.checkers_pos[op_player].items():
-        op_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
+    player_layers = [np.copy(new_board[:, :, 0]) for _ in range(6)]
+    for player in range(1, 6 + 1):
+        np.putmask(player_layers[player - 1], player_layers[player - 1] != player, 0)
+        for checker_id, checker_pos in board.checkers_pos[player].items():
+            player_layers[player - 1][checker_pos[0], checker_pos[1]] = checker_id + 1
 
+    op_player = (cur_player + 1) % 6
+    cur_layer = player_layers[cur_player - 1]
+    op_layer = player_layers[op_player - 1]
 
     model_input[:, :, 0] = np.copy(cur_layer)
     model_input[:, :, 1] = np.copy(op_layer)
 
-    # construct the latter layers
     moved_player = op_player
     hist_index = len(hist_moves) - 1
     for channel in range(1, BOARD_HIST_MOVES):
@@ -152,55 +136,22 @@ def to_model_input(board, cur_player):
             op_layer[orig_pos] = value
 
         hist_index -= 1
-        moved_player = PLAYER_ONE + PLAYER_TWO - moved_player
-        model_input[:, :, channel * 2] = np.copy(cur_layer)
-        model_input[:, :, channel * 2 + 1] = np.copy(op_layer)
+        moved_player = (moved_player + 1) % 6
+        model_input[:, :, channel * 6] = np.copy(cur_layer)
+        model_input[:, :, channel * 6 + 1] = np.copy(op_layer)
 
-    if cur_player == PLAYER_TWO: # player 2 to play
+    if cur_player == PLAYER_TWO:
         model_input[:, :, BOARD_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT))
+    elif cur_player == PLAYER_THREE:
+        model_input[:, :, BOARD_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT)) * 2
+    elif cur_player == PLAYER_FOUR:
+        model_input[:, :, BOARD_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT)) * 3
+    elif cur_player == PLAYER_FIVE:
+        model_input[:, :, BOARD_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT)) * 4
+    elif cur_player == PLAYER_SIX:
+        model_input[:, :, BOARD_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT)) * 5
 
     return model_input
-
-
-    # get opponent player
-    op_players = [(PLAYER_ONE + i) % 6 + 1 for i in range(1, 6)]
-
-    # firstly, construct the current state layers
-    player_layers = [np.copy(new_board[:, :, 0]) for _ in range(6)]
-    for player in range(1, 6 + 1):
-        np.putmask(player_layers[player - 1], player_layers[player - 1] != player, 0)
-        for checker_id, checker_pos in board.checkers_pos[player].items():
-            player_layers[player - 1][checker_pos[0], checker_pos[1]] = checker_id + 1
-
-    for i in range(6):
-        model_input[:, :, i * BOARD_HIST_MOVES] = np.copy(player_layers[i])
-
-    # construct the latter layers
-    moved_player = op_players[-1]
-    hist_index = len(hist_moves) - 1
-    for channel in range(1, BOARD_HIST_MOVES):
-        if not np.any(new_board[:, :, channel]): # timestep < 0
-            break
-        move = hist_moves[hist_index]
-        orig_pos = move[0]
-        dest_pos = move[1]
-
-        player_index = (moved_player - 1) % 6
-        value = player_layers[player_index][dest_pos]
-        player_layers[player_index][dest_pos] = player_layers[player_index][orig_pos]
-        player_layers[player_index][orig_pos] = value
-
-        hist_index -= 1
-        moved_player = (moved_player % 6) + 1
-        for i in range(6):
-            model_input[:, :, i * BOARD_HIST_MOVES + channel] = np.copy(player_layers[i])
-
-    # Set the last channel to indicate the current player
-    model_input[:, :, 6 * BOARD_HIST_MOVES] = np.ones((BOARD_WIDTH, BOARD_HEIGHT)) * ((cur_player - 1) / (6 - 1))
-
-    return model_input
-
-
 
 def encode_checker_index(checker_id, coord):
     """
@@ -210,8 +161,6 @@ def encode_checker_index(checker_id, coord):
     region = checker_id * BOARD_WIDTH * BOARD_HEIGHT # get the element-block in the model's output
     offset = coord[0] * BOARD_WIDTH + coord[1]          # offset in this region
     return region + offset
-
-
 
 def decode_checker_index(model_output_index):
     """
@@ -223,16 +172,12 @@ def decode_checker_index(model_output_index):
     dest = offset // BOARD_WIDTH, offset % BOARD_WIDTH
     return checker_id, dest
 
-
-
 def softmax(input):
     ''' Compute the softmax (prediction) given input '''
     input = np.copy(input).astype('float64')
     input -= np.max(input, axis=-1, keepdims=True)  # For numerical stability
     exps = np.exp(input)
     return exps / np.sum(exps, axis=-1, keepdims=True)
-
-
 
 def deepsizeof(obj, visited):
     d = deepsizeof
@@ -250,28 +195,31 @@ def deepsizeof(obj, visited):
 
     return r
 
-
 if __name__ == '__main__':
     from board import Board
 
     b = Board()
     p1 = to_model_input(b, PLAYER_ONE)
     p2 = to_model_input(b, PLAYER_TWO)
-    # p3 = to_model_input(b, PLAYER_THREE)
-    # p4 = to_model_input(b, PLAYER_FOUR)
-    # p5 = to_model_input(b, PLAYER_FOUR)
-    # p6 = to_model_input(b, PLAYER_SIX)
+    p3 = to_model_input(b, PLAYER_THREE)
+    p4 = to_model_input(b, PLAYER_FOUR)
+    p5 = to_model_input(b, PLAYER_FIVE)
+    p6 = to_model_input(b, PLAYER_SIX)
 
-    print(p1[:, :, 0])
-    print(p2[:, :, 0])
-    print()
+    # print(p1[:, :, 0])
+    # print(p2[:, :, 0])
     # print(p3[:, :, 0])
     # print(p4[:, :, 0])
     # print(p5[:, :, 0])
     # print(p6[:, :, 0])
 
-    print(p1[:, :, 1])
-    print(p2[:, :, 1])
-    print()
+    # print(p1[:, :, 1])
+    # print(p2[:, :, 1])
+    # print()
     print(p1[:, :, 6])
     print(p2[:, :, 6])
+    print(p3[:, :, 6])
+    print(p4[:, :, 6])
+    print(p5[:, :, 6])
+    print(p6[:, :, 6])
+

@@ -27,7 +27,7 @@ DIR_NOISE_FACTOR = 0.25                     # Weight of Dirichlet noise on root 
 
 ''' Model '''
 # Model input dimensions
-INPUT_DIM = (BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES * 2 + 1)
+INPUT_DIM = (BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES * 6 + 1)
 NUM_FILTERS = 64                            # Default number of filters for conv layers
 NUM_RESIDUAL_BLOCKS = 12                    # Number of residual blocks in the model
 
@@ -59,8 +59,8 @@ DEF_DATA_RETENTION_RATE = 0.5               # Default percentage of training dat
 BATCH_SIZE = 32
 REG_CONST = 6e-3                            # Weight decay constant (l1/l2 regularizer)
 LEARNING_RATE = 0.0001                       # Traning learning rate
-EPOCHS = 5                                 # Training Epochs
-NUM_SELF_PLAY = 180                          # Total number of self plays to generate
+EPOCHS = 1                                 # Training Epochs
+NUM_SELF_PLAY = 10                          # Total number of self plays to generate
 NUM_WORKERS = 12                            # For generating self plays in parallel
 SELF_PLAY_DIFF_MODEL = False
 
