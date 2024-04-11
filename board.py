@@ -17,13 +17,34 @@ class Board:
         at bottom left and top right corners respectively.
         """
         self.board = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES), dtype='uint8')  # Initialize empty board
-        self.board[:, :, 0] = np.array([[0, 0, 0, 0, 2, 2, 2],
-                                        [0, 0, 0, 0, 0, 2, 2],
-                                        [0, 0, 0, 0, 0, 0, 2],
-                                        [0, 0, 0, 0, 0, 0, 0],
-                                        [1, 0, 0, 0, 0, 0, 0],
-                                        [1, 1, 0, 0, 0, 0, 0],
-                                        [1, 1, 1, 0, 0, 0, 0]])
+        # self.board[:, :, 0] = np.array([[0, 0, 0, 0, 2, 2, 2],
+        #                                 [0, 0, 0, 0, 0, 2, 2],
+        #                                 [0, 0, 0, 0, 0, 0, 2],
+        #                                 [0, 0, 0, 0, 0, 0, 0],
+        #                                 [1, 0, 0, 0, 0, 0, 0],
+        #                                 [1, 1, 0, 0, 0, 0, 0],
+        #                                 [1, 1, 1, 0, 0, 0, 0]])
+        
+        self.board[:, :, 0] = np.array([[9, 9, 9, 9, 9,   9, 9, 9, 9, 9,   9, 9, 1, 9, 9,   9, 9],
+                                        [9, 9, 9, 9, 9,   9, 9, 9, 9, 9,   9, 1, 1, 9, 9,   9, 9],
+                                        [9, 9, 9, 9, 9,   9, 9, 9, 9, 9,   1, 1, 1, 9, 9,   9, 9],
+                                        [9, 9, 9, 9, 9,   9, 9, 9, 9, 1,   1, 1, 1, 9, 9,   9, 9],
+                                        [9, 9, 9, 9, 2,   2, 2, 2, 0, 0,   0, 0, 0, 6, 6,   6, 6],
+
+                                        [9, 9, 9, 9, 2,   2, 2, 0, 0, 0,   0, 0, 0, 6, 6,   6, 9],
+                                        [9, 9, 9, 9, 2,   2, 0, 0, 0, 0,   0, 0, 0, 6, 6,   9, 9],
+                                        [9, 9, 9, 9, 2,   0, 0, 0, 0, 0,   0, 0, 0, 6, 9,   9, 9],
+                                        [9, 9, 9, 9, 0,   0, 0, 0, 0, 0,   0, 0, 0, 9, 9,   9, 9],
+                                        [9, 9, 9, 3, 0,   0, 0, 0, 0, 0,   0, 0, 5, 9, 9,   9, 9],
+
+                                        [9, 9, 3, 3, 0,   0, 0, 0, 0, 0,   0, 5, 5, 9, 9,   9, 9],
+                                        [9, 3, 3, 3, 0,   0, 0, 0, 0, 0,   5, 5, 5, 9, 9,   9, 9],
+                                        [3, 3, 3, 3, 0,   0, 0, 0, 0, 5,   5, 5, 5, 9, 9,   9, 9],
+                                        [9, 9, 9, 9, 4,   4, 4, 4, 9, 9,   9, 9, 9, 9, 9,   9, 9],
+                                        [9, 9, 9, 9, 4,   4, 4, 9, 9, 9,   9, 9, 9, 9, 9,   9, 9],
+
+                                        [9, 9, 9, 9, 4,   4, 9, 9, 9, 9,   9, 9, 9, 9, 9,   9, 9],
+                                        [9, 9, 9, 9, 4,   9, 9, 9, 9, 9,   9, 9, 9, 9, 9,   9, 9]])
 
         # == Directions Map ==
         #
@@ -39,24 +60,54 @@ class Board:
             (-1, -1)    # northwest
         ]
 
+        # self.checkers_pos = [None,
+        #                      {0: (BOARD_HEIGHT-1, 0), 1: (BOARD_HEIGHT-2, 0), 2: (BOARD_HEIGHT-1, 1),
+        #                       3: (BOARD_HEIGHT-3, 0), 4: (BOARD_HEIGHT-2, 1), 5: (BOARD_HEIGHT-1, 2)},
+        #                      {0: (0, BOARD_WIDTH-1), 1: (1, BOARD_WIDTH-1), 2: (0, BOARD_WIDTH-2),
+        #                       3: (2, BOARD_WIDTH-1), 4: (1, BOARD_WIDTH-2), 5: (0, BOARD_WIDTH-3)}]
+
+        # self.checkers_id = [None,
+        #                     {(BOARD_HEIGHT-1, 0): 0, (BOARD_HEIGHT-2, 0): 1, (BOARD_HEIGHT-1, 1): 2,
+        #                      (BOARD_HEIGHT-3, 0): 3, (BOARD_HEIGHT-2, 1): 4, (BOARD_HEIGHT-1, 2): 5},
+        #                     {(0, BOARD_WIDTH-1): 0, (1, BOARD_WIDTH-1): 1, (0, BOARD_WIDTH-2): 2,
+        #                      (2, BOARD_WIDTH-1): 3, (1, BOARD_WIDTH-2): 4, (0, BOARD_WIDTH-3): 5}]
+        
         self.checkers_pos = [None,
-                             {0: (BOARD_HEIGHT-1, 0), 1: (BOARD_HEIGHT-2, 0), 2: (BOARD_HEIGHT-1, 1),
-                              3: (BOARD_HEIGHT-3, 0), 4: (BOARD_HEIGHT-2, 1), 5: (BOARD_HEIGHT-1, 2)},
-                             {0: (0, BOARD_WIDTH-1), 1: (1, BOARD_WIDTH-1), 2: (0, BOARD_WIDTH-2),
-                              3: (2, BOARD_WIDTH-1), 4: (1, BOARD_WIDTH-2), 5: (0, BOARD_WIDTH-3)}]
+                     {0: (0, 12), 1: (1, 11), 2: (1, 12), 3: (2, 10), 4: (2, 11), 5: (2, 12),
+                      6: (3, 9), 7: (3, 10), 8: (3, 11), 9: (3, 12)},
+                     {0: (4, 4), 1: (5, 4), 2: (4, 5), 3: (6, 4), 4: (5, 5), 5: (4, 6),
+                      6: (7, 4), 7: (6, 5), 8: (5, 6), 9: (4, 7)},
+                     {0: (12, 0), 1: (12, 1), 2: (11, 1), 3: (12, 2), 4: (11, 2), 5: (10, 2),
+                      6: (12, 3), 7: (11, 3), 8: (10, 3), 9: (9, 3)},
+                     {0: (16, 4), 1: (15, 5), 2: (15, 4), 3: (14, 6), 4: (14, 5), 5: (14, 4),
+                      6: (13, 7), 7: (13, 6), 8: (13, 5), 9: (13, 4)},
+                     {0: (12, 12), 1: (11, 12), 2: (12, 11), 3: (10, 12), 4: (11, 11), 5: (12, 10),
+                      6: (9, 12), 7: (10, 11), 8: (11, 10), 9: (12, 9)},
+                     {0: (4, 16), 1: (4, 15), 2: (5, 15), 3: (4, 14), 4: (5, 14), 5: (6, 14),
+                      6: (4, 13), 7: (5, 13), 8: (6, 13), 9: (7, 13)}
+                    ]
 
         self.checkers_id = [None,
-                            {(BOARD_HEIGHT-1, 0): 0, (BOARD_HEIGHT-2, 0): 1, (BOARD_HEIGHT-1, 1): 2,
-                             (BOARD_HEIGHT-3, 0): 3, (BOARD_HEIGHT-2, 1): 4, (BOARD_HEIGHT-1, 2): 5},
-                            {(0, BOARD_WIDTH-1): 0, (1, BOARD_WIDTH-1): 1, (0, BOARD_WIDTH-2): 2,
-                             (2, BOARD_WIDTH-1): 3, (1, BOARD_WIDTH-2): 4, (0, BOARD_WIDTH-3): 5}]
+                    {(0, 12): 0, (1, 11): 1, (1, 12): 2, (2, 10): 3, (2, 11): 4, (2, 12): 5,
+                     (3, 9): 6, (3, 10): 7, (3, 11): 8, (3, 12): 9},
+                    {(4, 4): 0, (5, 4): 1, (4, 5): 2, (6, 4): 3, (5, 5): 4, (4, 6): 5,
+                     (7, 4): 6, (6, 5): 7, (5, 6): 8, (4, 7): 9},
+                    {(12, 0): 0, (12, 1): 1, (11, 1): 2, (12, 2): 3, (11, 2): 4, (10, 2): 5,
+                     (12, 3): 6, (11, 3): 7, (10, 3): 8, (9, 3): 9},
+                    {(16, 4): 0, (15, 5): 1, (15, 4): 2, (14, 6): 3, (14, 5): 4, (14, 4): 5,
+                     (13, 7): 6, (13, 6): 7, (13, 5): 8, (13, 4): 9},
+                    {(12, 12): 0, (11, 12): 1, (12, 11): 2, (10, 12): 3, (11, 11): 4, (12, 10): 5,
+                     (9, 12): 6, (10, 11): 7, (11, 10): 8, (12, 9): 9},
+                    {(4, 16): 0, (4, 15): 1, (5, 15): 2, (4, 14): 3, (5, 14): 4, (6, 14): 5,
+                     (4, 13): 6, (5, 13): 7, (6, 13): 8, (7, 13): 9}
+                   ]
+
+
 
         self.hist_moves = deque()
 
         if randomised:
             self.randomise_initial_state()
-
-
 
     def randomise_initial_state(self):
         '''
@@ -84,8 +135,6 @@ class Board:
 
         assert index == NUM_CHECKERS * 2
 
-
-
     def check_win(self):
         """
         Returns the winner given the current board state; 0 if game still going
@@ -110,8 +159,6 @@ class Board:
 
         return PLAYER_ONE if one_win else PLAYER_TWO
 
-
-
     def visualise(self, cur_player=None, gap_btw_checkers=3):
         """
         Prints the current board for human visualisation
@@ -130,11 +177,11 @@ class Board:
             print('\tRow {:2}{}'.format(i, ' '*8), end='')
             # Print leading spaces
             print(' ' * ((leading_spaces - (num_slots - 1) * ((gap_btw_checkers + 1) // 2))), end='')
-            print((' ' * gap_btw_checkers).join(map(str, cur_board.diagonal(BOARD_WIDTH - i))), end='\n\n')  # Board contents
+            diagonal_values = [str(val) if val != 9 else ' ' for val in cur_board.diagonal(BOARD_WIDTH - i)]
+            print((' ' * gap_btw_checkers).join(diagonal_values), end='\n\n')  # Board contents
+            # print((' ' * gap_btw_checkers).join(map(str, cur_board.diagonal(BOARD_WIDTH - i))), end='\n\n')  # Board contents
 
         print('=' * 75)
-
-
 
     def valid_checker_moves(self, cur_player, checker_pos):
         """
@@ -160,8 +207,6 @@ class Board:
         self.board[checker_pos[0], checker_pos[1], 0] = cur_player;     # Put back current checker
         result.remove(checker_pos)                                      # Don't allow staying
         return result
-
-
 
     def valid_checker_jump_moves(self, valid_moves, check_map, checker_pos):
         """
@@ -209,8 +254,6 @@ class Board:
             valid_moves.append((row, col))
             check_map[row][col] = 1
             self.valid_checker_jump_moves(valid_moves, check_map, (row, col))
-
-
 
     def get_valid_moves(self, cur_player):
         """
@@ -287,22 +330,3 @@ class Board:
 
         return distance
 
-
-
-if __name__ == '__main__':
-    """
-    Put board.py testcases here
-    """
-    board = Board()
-    board.visualise()
-    # print(board.board[board.checker_pos[PLAYER_ONE][0][0],
-    # board.checker_pos[PLAYER_ONE][0][1], 0])
-    #
-    # print(board.board[6, 0, 0])
-    # print(board.board)
-    # board.print_board()
-    # print(board.get_valid_moves(1))
-    # print(board.check_win())
-    # print(board.check_win())
-    # for i in range(50000):
-    # board.place()

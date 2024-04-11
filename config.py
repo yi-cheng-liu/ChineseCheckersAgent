@@ -3,19 +3,22 @@
 PLAYER_ONE = 1
 PLAYER_TWO = 2
 PLAYER_THREE = 3
+PLAYER_FOUR = 4
+PLAYER_FIVE = 5
+PLAYER_SIX = 6
 
 ''' Board/Game '''
-ROWS_OF_CHECKERS = 3
+ROWS_OF_CHECKERS = 4
 NUM_CHECKERS = (1 + ROWS_OF_CHECKERS) * ROWS_OF_CHECKERS // 2
 NUM_DIRECTIONS = 6
-BOARD_WIDTH = BOARD_HEIGHT = ROWS_OF_CHECKERS * 2 + 1
+BOARD_WIDTH = BOARD_HEIGHT = 17
 BOARD_HIST_MOVES = 3                          # Number of history moves to keep
 TYPES_OF_PLAYERS = ['h', 'g', 'a']
 PLAYER_ONE_DISTANCE_OFFSET = 70
 PLAYER_TWO_DISTANCE_OFFSET = -14
 TOTAL_HIST_MOVES = 16                       # Total number of history moves to keep for checking repetitions
 UNIQUE_DEST_LIMIT = 3
-NUM_PLAYERS = 3
+NUM_PLAYERS = 6
 
 ''' Dirichlet Noise '''
 DIRICHLET_ALPHA = 0.03                      # Alpha for ~ Dir(), assuming symmetric Dirichlet distribution
@@ -34,7 +37,7 @@ REWARD_FACTOR = 10                          # Scale the reward if necessary
 TREE_TAU = 1
 DET_TREE_TAU = 0.01
 C_PUCT = 3.5
-MCTS_SIMULATIONS = 250
+MCTS_SIMULATIONS = 525
 EPSILON = 1e-5
 TOTAL_MOVES_TILL_TAU0 = 16
 INITIAL_RANDOM_MOVES = 6

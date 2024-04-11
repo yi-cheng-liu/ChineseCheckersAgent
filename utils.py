@@ -31,19 +31,17 @@ def stress_message(message, extra_newline=False):
     print('{2}{0}\n{1}\n{0}{2}'.format('='*len(message), message, '\n' if extra_newline else ''))
 
 
-def get_p1_winloss_reward(board, winner=None):
+def get_winloss_reward(board, winner=None):
     """
     Return the reward for player one in the game, given the final board state
     """
     winner = winner or board.check_win()
-    if winner == PLAYER_ONE:
-        return [REWARD['win'], REWARD['lose'], REWARD['lose']]
-    elif winner == PLAYER_TWO:
-        return [REWARD['lose'], REWARD['win'], REWARD['lose']]
-    elif winner == PLAYER_THREE:
-        return [REWARD['lose'], REWARD['lose'], REWARD['win']]    
+    value = [REWARD['lose'], REWARD['lose'], REWARD['lose'], REWARD['lose'], REWARD['lose'], REWARD['lose']]
+    if winner == PLAYER_ONE or winner == PLAYER_TWO or winner == PLAYER_THREE or winner == PLAYER_FOUR or winner == PLAYER_FIVE or winner == PLAYER_SIX:
+        value[winner] = REWARD['win']   
     else:
-        return [REWARD['draw'], REWARD['draw'], REWARD['draw']]
+        value = [REWARD['draw'], REWARD['draw'], REWARD['draw'], REWARD['draw'], REWARD['draw'], REWARD['draw']]
+    return value
 
 
 
@@ -69,8 +67,7 @@ def convert_to_train_data(self_play_games):
             board_x.append(to_model_input(board, curr_player))
             pi_y.append(pi)
             v_y.append(reward)
-            reward = -reward
-            curr_player = PLAYER_ONE + PLAYER_TWO - curr_player
+            curr_player = curr_player % NUM_PLAYERS + 1
 
     return board_x, pi_y, v_y
 
@@ -109,28 +106,52 @@ def to_model_input(board, cur_player):
         7 x 7 x 7. First 3 channel is player 1, next 3 channel is player 2, last channel is all 0 if player 1 is to play.
     """
     # initialise the model input
-    model_input = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES * 2 + 1)) # may change dtype afterwards
+    model_input = np.zeros((BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES * 6 + 1)) # may change dtype afterwards
     # get np array board
     new_board = board.board
     # get history moves
     hist_moves = board.hist_moves
     # get opponent player
-    op_player = PLAYER_ONE + PLAYER_TWO - cur_player
+    p2 = cur_player % 6 + 1
+    p3 = p2 % 6 + 1
+    p4 = p3 % 6 + 1
+    p5 = p4 % 6 + 1
+    p6 = p5 % 6 + 1
 
     # firstly, construct the current state layers
-    op_layer = np.copy(new_board[:, :, 0])
     cur_layer = np.copy(new_board[:, :, 0])
+    p2_layer = np.copy(new_board[:, :, 0])
+    p3_layer = np.copy(new_board[:, :, 0])
+    p4_layer = np.copy(new_board[:, :, 0])
+    p5_layer = np.copy(new_board[:, :, 0])
+    p6_layer = np.copy(new_board[:, :, 0])    
     # construct layer for current player
     np.putmask(cur_layer, cur_layer != cur_player, 0)
     for checker_id, checker_pos in board.checkers_pos[cur_player].items():
         cur_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
     # construct layer for opponent player
-    np.putmask(op_layer, op_layer != op_player, 0)
-    for checker_id, checker_pos in board.checkers_pos[op_player].items():
-        op_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
+    np.putmask(p2_layer, p2_layer != p2, 0)
+    for checker_id, checker_pos in board.checkers_pos[p2].items():
+        p2_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
+    np.putmask(p3_layer, p3_layer != p3, 0)
+    for checker_id, checker_pos in board.checkers_pos[p3].items():
+        p3_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
+    np.putmask(p4_layer, p4_layer != p4, 0)
+    for checker_id, checker_pos in board.checkers_pos[p4].items():
+        p4_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
+    np.putmask(p5_layer, p5_layer != p5, 0)
+    for checker_id, checker_pos in board.checkers_pos[p5].items():
+        p5_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
+    np.putmask(p6_layer, p6_layer != p6, 0)
+    for checker_id, checker_pos in board.checkers_pos[p6].items():
+        p6_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
 
     model_input[:, :, 0] = np.copy(cur_layer)
-    model_input[:, :, 1] = np.copy(op_layer)
+    model_input[:, :, 1] = np.copy(p2_layer)
+    model_input[:, :, 2] = np.copy(p3_layer)
+    model_input[:, :, 3] = np.copy(p4_layer)
+    model_input[:, :, 4] = np.copy(p5_layer)
+    model_input[:, :, 5] = np.copy(p6_layer)    
 
     # construct the latter layers
     moved_player = op_player
@@ -218,9 +239,17 @@ if __name__ == '__main__':
     b = Board()
     p1 = to_model_input(b, PLAYER_ONE)
     p2 = to_model_input(b, PLAYER_TWO)
+    p3 = to_model_input(b, PLAYER_THREE)
+    p4 = to_model_input(b, PLAYER_FOUR)
+    p5 = to_model_input(b, PLAYER_FIVE)
+    p6 = to_model_input(b, PLAYER_SIX)
 
     print(p1[:, :, 0])
     print(p2[:, :, 0])
+    print(p3[:, :, 0])
+    print(p4[:, :, 0])
+    print(p5[:, :, 0])
+    print(p6[:, :, 0])
     print()
     # print(p1[:, :, 1])
     # print(p2[:, :, 1])

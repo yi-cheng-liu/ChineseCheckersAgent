@@ -69,7 +69,7 @@ class GreedyDataGenerator:
 
             self.swap_players()
 
-        reward = utils.get_p1_winloss_reward(self.board, final_winner)
+        reward = utils.get_winloss_reward(self.board, final_winner)
 
         # Reset generator for next game
         self.board = Board(randomised=self.randomised)

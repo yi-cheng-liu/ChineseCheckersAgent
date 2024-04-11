@@ -79,9 +79,9 @@ def selfplay(model1, model2=None, model3=None, randomised=False):
 
     if randomised:
         # Discard the first `BOARD_HIST_MOVES` as the history is not enough
-        return play_history[BOARD_HIST_MOVES:], utils.get_p1_winloss_reward(root.state)
+        return play_history[BOARD_HIST_MOVES:], utils.get_winloss_reward(root.state)
     else:
-        return play_history, utils.get_p1_winloss_reward(root.state)
+        return play_history, utils.get_winloss_reward(root.state)
 
 
 def make_random_move(root):
