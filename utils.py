@@ -113,57 +113,9 @@ def to_model_input(board, cur_player):
     new_board = board.board
     # get history moves
     hist_moves = board.hist_moves
-    # get opponent player
-    op_player = PLAYER_ONE + PLAYER_TWO - cur_player
-
-    # firstly, construct the current state layers
-    op_layer = np.copy(new_board[:, :, 0])
-    cur_layer = np.copy(new_board[:, :, 0])
-    # construct layer for current player
-    np.putmask(cur_layer, cur_layer != cur_player, 0)
-    for checker_id, checker_pos in board.checkers_pos[cur_player].items():
-        cur_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
-    # construct layer for opponent player
-    np.putmask(op_layer, op_layer != op_player, 0)
-    for checker_id, checker_pos in board.checkers_pos[op_player].items():
-        op_layer[checker_pos[0], checker_pos[1]] = checker_id + 1
-
-
-    model_input[:, :, 0] = np.copy(cur_layer)
-    model_input[:, :, 1] = np.copy(op_layer)
-
-    # construct the latter layers
-    moved_player = op_player
-    hist_index = len(hist_moves) - 1
-    for channel in range(1, BOARD_HIST_MOVES):
-        if not np.any(new_board[:, :, channel]): # timestep < 0
-            break
-        move = hist_moves[hist_index]
-        orig_pos = move[0]
-        dest_pos = move[1]
-
-        if moved_player == cur_player:
-            value = cur_layer[dest_pos]
-            cur_layer[dest_pos] = cur_layer[orig_pos]
-            cur_layer[orig_pos] = value
-        else:
-            value = op_layer[dest_pos]
-            op_layer[dest_pos] = op_layer[orig_pos]
-            op_layer[orig_pos] = value
-
-        hist_index -= 1
-        moved_player = PLAYER_ONE + PLAYER_TWO - moved_player
-        model_input[:, :, channel * 2] = np.copy(cur_layer)
-        model_input[:, :, channel * 2 + 1] = np.copy(op_layer)
-
-    if cur_player == PLAYER_TWO: # player 2 to play
-        model_input[:, :, BOARD_HIST_MOVES * 2] = np.ones((BOARD_WIDTH, BOARD_HEIGHT))
-
-    return model_input
-
 
     # get opponent player
-    op_players = [(PLAYER_ONE + i) % 6 + 1 for i in range(1, 6)]
+    op_players = [(cur_player + i - 1) % 6 + 1 for i in range(1, 6)]
 
     # firstly, construct the current state layers
     player_layers = [np.copy(new_board[:, :, 0]) for _ in range(6)]

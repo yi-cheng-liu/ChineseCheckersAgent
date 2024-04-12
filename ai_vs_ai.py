@@ -25,16 +25,16 @@ def load_agent(model_path, model_num, verbose=False):
     return model
 
 
-def agent_match(model1_path, model2_path, num_games, verbose=False, tree_tau=DET_TREE_TAU, enforce_move_limit=False):
-    win_count = { PLAYER_ONE: 0, PLAYER_TWO: 0 }
+def agent_match(model1_path, model2_path, num_games, key_player, verbose=False, tree_tau=DET_TREE_TAU, enforce_move_limit=False):
+    win_count = { PLAYER_ONE: 0, PLAYER_TWO: 0, PLAYER_THREE: 0, PLAYER_FOUR: 0, PLAYER_FIVE: 0, PLAYER_SIX: 0 }
 
-    model1 = load_agent(model1_path, 1, verbose)
-    model2 = load_agent(model2_path, 2, verbose)
+    models = [load_agent(model1_path, i, verbose) for i in range(1, 7)]
+    models[key_player] = load_agent(model2_path, key_player + 1, verbose)
 
     for i in range(num_games):
         if verbose:
             utils.stress_message('Game {}'.format(i + 1))
-        game = Game(p1_type='ai', p2_type='ai', verbose=verbose, model1=model1, model2=model2, tree_tau=tree_tau)
+        game = Game(p1_type='ai', p2_type='ai', verbose=verbose, models=models, tree_tau=tree_tau)
         winner = game.start(enforce_move_limit=enforce_move_limit)
         if winner is not None:
             win_count[winner] += 1
@@ -44,11 +44,12 @@ def agent_match(model1_path, model2_path, num_games, verbose=False, tree_tau=DET
         print('Agent "{}" wins {} matches'.format(model2_path, win_count[PLAYER_TWO]))
 
     # Return the winner by at least 55% win rate
-    if win_count[PLAYER_ONE] > int(0.55 * num_games):
+    if win_count[key_player + 1] > int(0.2 * num_games):
         return model1_path
-    elif win_count[PLAYER_TWO] > int(0.55 * num_games):
-        return model2_path
     else:
+        for i in range(1,7):
+            if win_count[i] > int(0.2 * num_games):
+                return model2_path
         return None
 
 

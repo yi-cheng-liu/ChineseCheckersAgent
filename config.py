@@ -8,17 +8,18 @@ PLAYER_FIVE = 5
 PLAYER_SIX = 6
 
 ''' Board/Game '''
+# ROWS_OF_CHECKERS = 3
 ROWS_OF_CHECKERS = 4
 NUM_CHECKERS = (1 + ROWS_OF_CHECKERS) * ROWS_OF_CHECKERS // 2
 NUM_DIRECTIONS = 6
+# BOARD_WIDTH = BOARD_HEIGHT = ROWS_OF_CHECKERS * 2 + 1
 BOARD_WIDTH = BOARD_HEIGHT = 17
 BOARD_HIST_MOVES = 3                          # Number of history moves to keep
 TYPES_OF_PLAYERS = ['h', 'g', 'a']
 PLAYER_ONE_DISTANCE_OFFSET = 70
 PLAYER_TWO_DISTANCE_OFFSET = -14
-TOTAL_HIST_MOVES = 16                       # Total number of history moves to keep for checking repetitions
+TOTAL_HIST_MOVES = 48                       # Total number of history moves to keep for checking repetitions
 UNIQUE_DEST_LIMIT = 3
-NUM_PLAYERS = 6
 
 ''' Dirichlet Noise '''
 DIRICHLET_ALPHA = 0.03                      # Alpha for ~ Dir(), assuming symmetric Dirichlet distribution
@@ -26,7 +27,7 @@ DIR_NOISE_FACTOR = 0.25                     # Weight of Dirichlet noise on root 
 
 ''' Model '''
 # Model input dimensions
-INPUT_DIM = (BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES * 2 + 1)
+INPUT_DIM = (BOARD_WIDTH, BOARD_HEIGHT, BOARD_HIST_MOVES * 6 + 1)
 NUM_FILTERS = 64                            # Default number of filters for conv layers
 NUM_RESIDUAL_BLOCKS = 12                    # Number of residual blocks in the model
 

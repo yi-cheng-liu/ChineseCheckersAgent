@@ -201,7 +201,7 @@ if __name__ == '__main__':
     # for i in range(model_input.shape[2]):
     #     print(model_input[:, :, i])
 
-    from keras.utils.vis_utils import plot_model
+    # from keras.utils.vis_utils import plot_model
     model = ResidualCNN()
     # test for saving
     model.model.summary()

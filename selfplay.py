@@ -39,11 +39,11 @@ def selfplay(model1, model2=None, randomised=False):
         assert root.isLeaf()
 
         hist_moves = root.state.hist_moves
-        cur_player_hist_moves = [hist_moves[i] for i in range(len(hist_moves) - 1, -1, -2)]
+        cur_player_hist_moves = [hist_moves[i] for i in range(len(hist_moves) - 1, -1, -6)]
         history_dests = set([move[1] for move in cur_player_hist_moves])
 
         # If limited destinations exist in the past moves, then there is some kind of repetition
-        if len(cur_player_hist_moves) * 2 >= TOTAL_HIST_MOVES and len(history_dests) <= UNIQUE_DEST_LIMIT:
+        if len(cur_player_hist_moves) * 6 >= TOTAL_HIST_MOVES and len(history_dests) <= UNIQUE_DEST_LIMIT:
             print('Repetition detected: stopping and discarding game')
             return None, None
 
@@ -58,7 +58,7 @@ def selfplay(model1, model2=None, randomised=False):
         # Change player
         # player_turn = 1 - player_turn
         player_turn = (player_turn + 1) % 6  # Cycle through six players
-        use_model1 = not use_model1
+        use_model1 = True if player_turn == 0 else False
 
         # Change TREE_TAU to very small if game has certain progress so actions are deterministic
         if len(play_history) + INITIAL_RANDOM_MOVES > TOTAL_MOVES_TILL_TAU0:
