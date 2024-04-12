@@ -8,17 +8,16 @@ from board import Board
 from MCTS import MCTS, Node
 
 
-def selfplay(model1, model2=None, model3=None, randomised=False):
+def selfplay(model1, model2=None, randomised=False):
     '''
     Generate an agent self-play given two models
     TODO: if `randomised`, randomise starting board state
     '''
     if model2 is None:
         model2 = model1
-    if model3 is None:
-        model3 = model1
 
-    player_progresses = [0, 0, 0]
+    # player_progresses = [0, 0]
+    player_progresses = [0] * 6
     player_turn = 0
     num_useless_moves = 0
     play_history = []
@@ -27,10 +26,9 @@ def selfplay(model1, model2=None, model3=None, randomised=False):
     board = Board(randomised=randomised)
     root = Node(board, PLAYER_ONE)          # initial game state
     use_model1 = True
-    use_model2 = False
 
     while True:
-        model = model1 if use_model1 else (model2 if use_model2 else model3)
+        model = model1 if use_model1 else model2
 
         if len(root.state.hist_moves) < INITIAL_RANDOM_MOVES:
             root = make_random_move(root)
@@ -45,7 +43,7 @@ def selfplay(model1, model2=None, model3=None, randomised=False):
         history_dests = set([move[1] for move in cur_player_hist_moves])
 
         # If limited destinations exist in the past moves, then there is some kind of repetition
-        if len(cur_player_hist_moves) * 3 >= TOTAL_HIST_MOVES and len(history_dests) <= UNIQUE_DEST_LIMIT:
+        if len(cur_player_hist_moves) * 2 >= TOTAL_HIST_MOVES and len(history_dests) <= UNIQUE_DEST_LIMIT:
             print('Repetition detected: stopping and discarding game')
             return None, None
 
@@ -58,9 +56,9 @@ def selfplay(model1, model2=None, model3=None, randomised=False):
             num_useless_moves += 1
 
         # Change player
-        use_model1 = True if player_turn == 2 else False
-        use_model2 = True if player_turn == 0 else False
-        player_turn = (player_turn + 1) % 3
+        # player_turn = 1 - player_turn
+        player_turn = (player_turn + 1) % 6  # Cycle through six players
+        use_model1 = not use_model1
 
         # Change TREE_TAU to very small if game has certain progress so actions are deterministic
         if len(play_history) + INITIAL_RANDOM_MOVES > TOTAL_MOVES_TILL_TAU0:
@@ -79,9 +77,9 @@ def selfplay(model1, model2=None, model3=None, randomised=False):
 
     if randomised:
         # Discard the first `BOARD_HIST_MOVES` as the history is not enough
-        return play_history[BOARD_HIST_MOVES:], utils.get_winloss_reward(root.state)
+        return play_history[BOARD_HIST_MOVES:], utils.get_p1_winloss_reward(root.state)
     else:
-        return play_history, utils.get_winloss_reward(root.state)
+        return play_history, utils.get_p1_winloss_reward(root.state)
 
 
 def make_random_move(root):
@@ -103,7 +101,8 @@ def make_random_move(root):
 
     next_state = copy.deepcopy(cur_state)
     next_state.place(player, random_start, random_end)
-    new_player = PLAYER_ONE + PLAYER_TWO - player
+    # new_player = PLAYER_ONE + PLAYER_TWO - player
+    new_player = (player % 6) + 1  # Cycle through six players
 
     return Node(next_state, new_player)
 

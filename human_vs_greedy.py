@@ -6,5 +6,5 @@ want to play human-vs-greedy game
 """
 
 if __name__ == '__main__':
-    game = Game(p1_type='human', p2_type='greedy', p3_type='greedy')
+    game = Game(p1_type='human', p2_type='greedy')
     game.start()

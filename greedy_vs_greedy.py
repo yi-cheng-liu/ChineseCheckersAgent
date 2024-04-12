@@ -9,12 +9,12 @@ want to play human-vs-greedy game
 """
 
 if __name__ == '__main__':
-    count = { PLAYER_ONE : 0, PLAYER_TWO : 0, PLAYER_THREE : 0 }
+    count = { PLAYER_ONE : 0, PLAYER_TWO : 0 }
     num_games = 50
     end_states = []
     for i in range(num_games):
         utils.stress_message('Game {}'.format(i + 1))
-        game = Game(p1_type='greedy', p2_type='greedy', p3_type='greedy', verbose=False)
+        game = Game(p1_type='greedy', p2_type='greedy', verbose=False)
         winner = game.start()
         if winner is not None:
             count[winner] += 1
@@ -26,4 +26,3 @@ if __name__ == '__main__':
 
     print('Player {} wins {} matches'.format(PLAYER_ONE, count[PLAYER_ONE]))
     print('Player {} wins {} matches'.format(PLAYER_TWO, count[PLAYER_TWO]))
-    print('Player {} wins {} matches'.format(PLAYER_THREE, count[PLAYER_THREE]))

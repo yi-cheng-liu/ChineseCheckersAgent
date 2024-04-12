@@ -6,12 +6,14 @@ import datetime
 import threading
 import argparse
 import multiprocessing as mp
+import tensorflow as tf
 
 import utils
 from config import *
 from model import *
 from MCTS import *
 from selfplay import selfplay
+
 
 """
 This file coordinates training procedure, including:
@@ -24,15 +26,20 @@ This file coordinates training procedure, including:
 """
 
 
-def generate_self_play(worker_id, model_path, num_self_play, model2_path=None, model3_path=None):
+def generate_self_play(worker_id, model_path, num_self_play, model2_path=None):
     # Load the current model in the worker only for prediction and set GPU limit
-    import tensorflow as tf
-    tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
-    session = tf.Session(config=tf_config)
+    # tf_config = tf.ConfigProto()
+    # tf_config.gpu_options.allow_growth = True
+    # session = tf.Session(config=tf_config)
+    # set_session(session=session)
 
-    from keras.backend.tensorflow_backend import set_session
-    set_session(session=session)
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as e:
+            print(e)
 
     # Re-seed the generators: since the RNG was copied from parent process
     np.random.seed()        # None seed to source from /dev/urandom
@@ -41,7 +48,6 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None, m
     # Decide what model to use
     model = ResidualCNN()
     model2 = None
-    model3 = None
     if model_path is not None:
         print('Worker {}: loading model "{}"'.format(worker_id, model_path))
         model.load_weights(model_path)
@@ -54,20 +60,13 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None, m
             print('Worker {}: 2nd model load successful'.format(worker_id))
         else:
             print ('Worker {}: Model2 is None; using Model1 to generate selfplays'.format(worker_id))
-        if model3_path is not None:
-            print('Worker {}: loading 2nd model "{}"'.format(worker_id, model2_path))
-            model3 = ResidualCNN()
-            model3.load_weights(model3_path)
-            print('Worker {}: 2nd model load successful'.format(worker_id))
-        else:
-            print ('Worker {}: Model2 is None; using Model1 to generate selfplays'.format(worker_id))
     else:
         print('Worker {}: using un-trained model'.format(worker_id))
 
     # Worker start generating self plays according to their workload
     worker_result = []
     for i in range(num_self_play):
-        play_history, p1_reward = selfplay(model, model2, model3, randomised=False)
+        play_history, p1_reward = selfplay(model, model2, randomised=False)
         if play_history is not None and p1_reward is not None:
             worker_result.append((play_history, p1_reward))
         print('Worker {}: generated {} self-plays'.format(worker_id, len(worker_result)))
@@ -76,7 +75,7 @@ def generate_self_play(worker_id, model_path, num_self_play, model2_path=None, m
 
 
 
-def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model2_path=None, model3_path=None):
+def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model2_path=None):
     # Process pool for parallelism
     process_pool = mp.Pool(processes=num_workers)
     work_share = num_self_play // num_workers
@@ -90,7 +89,7 @@ def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model
         # Send workers
         result_async = process_pool.apply_async(
             generate_self_play,
-            args=(i + 1, model_path, work_share, model2_path, model3_path))
+            args=(i + 1, model_path, work_share, model2_path))
         worker_results.append(result_async)
 
     try:
@@ -116,13 +115,18 @@ def generate_self_play_in_parallel(model_path, num_self_play, num_workers, model
 
 def train(model_path, board_x, pi_y, v_y, data_retention, version):
     # Set TF gpu limit
-    import tensorflow as tf
-    tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
-    session = tf.Session(config=tf_config)
+    # tf_config = tf.ConfigProto()
+    # tf_config.gpu_options.allow_growth = True
+    # session = tf.Session(config=tf_config)
+    # set_session(session=session)
 
-    from keras.backend.tensorflow_backend import set_session
-    set_session(session=session)
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as e:
+            print(e)
 
     np.random.seed()
     random.seed()
@@ -157,13 +161,18 @@ def train(model_path, board_x, pi_y, v_y, data_retention, version):
 
 def evaluate(worker_id, best_model, cur_model, num_games):
     # Load the current model in the worker only for prediction and set GPU limit
-    import tensorflow as tf
-    tf_config = tf.ConfigProto()
-    tf_config.gpu_options.allow_growth = True
-    session = tf.Session(config=tf_config)
+    # tf_config = tf.ConfigProto()
+    # tf_config.gpu_options.allow_growth = True
+    # session = tf.Session(config=tf_config)
+    # set_session(session=session)
 
-    from keras.backend.tensorflow_backend import set_session
-    set_session(session=session)
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+                tf.config.experimental.set_memory_growth(gpu, True)
+        except RuntimeError as e:
+            print(e)
 
     # Re-seed the generators: since the RNG was copied from parent process
     np.random.seed()        # None seed to source from /dev/urandom

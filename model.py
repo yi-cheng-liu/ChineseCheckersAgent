@@ -13,11 +13,10 @@ from loss import softmax_cross_entropy_with_logits
 
 
 class Model:
-    def __init__(self, input_dim, filters, num_players, version=0):
+    def __init__(self, input_dim, filters, version=0):
         self.input_dim = input_dim
         self.filters = filters
         self.version = version
-        self.num_players = num_players
 
     def predict(self, input_board):
         logits, v = self.model.predict(np.expand_dims(input_board, axis=0).astype('float64'))
@@ -51,12 +50,12 @@ class Model:
 
 
 class ResidualCNN(Model):
-    def __init__(self, input_dim=INPUT_DIM, filters=NUM_FILTERS, num_players=NUM_PLAYERS):
-        Model.__init__(self, input_dim, filters, num_players)
-        self.model = self.build_model(num_players)
+    def __init__(self, input_dim=INPUT_DIM, filters=NUM_FILTERS):
+        Model.__init__(self, input_dim, filters)
+        self.model = self.build_model()
 
 
-    def build_model(self, num_players):
+    def build_model(self):
         main_input = Input(shape=self.input_dim)
         regularizer = regularizers.l2(REG_CONST)
 
@@ -77,18 +76,18 @@ class ResidualCNN(Model):
         x = self.residual_block(x, [32, 32, 64], kernel_size=3, regularizer=regularizer)
 
         policy = self.policy_head(x, regularizer)
-        value = self.value_head(x, regularizer, num_players)
+        value = self.value_head(x, regularizer)
 
         model = KerasModel(inputs=[main_input], outputs=[policy, value])
         model.compile(loss={'policy_head':softmax_cross_entropy_with_logits, 'value_head':'mean_squared_error'}
-                    , optimizer=SGD(lr=LEARNING_RATE, momentum=0.9, nesterov=True) # NOTE: keep here for reuse
+                    , optimizer=SGD(learning_rate=LEARNING_RATE, momentum=0.9, nesterov=True) # NOTE: keep here for reuse
                     # , optimizer=Adam(lr=LEARNING_RATE)
                     , loss_weights=LOSS_WEIGHTS)
 
         return model
 
 
-    def value_head(self, head_input, regularizer, num_players):
+    def value_head(self, head_input, regularizer):
         x = Conv2D(filters=1, kernel_size=1, kernel_regularizer=regularizer)(head_input)
         x = BatchNormalization()(x)
         x = Activation('relu')(x)
@@ -97,7 +96,7 @@ class ResidualCNN(Model):
                 use_bias=True,
                 activation='relu',
                 kernel_regularizer=regularizer)(x)
-        x = Dense(num_players,
+        x = Dense(1,
                 use_bias=True,
                 activation='tanh',
                 kernel_regularizer=regularizer,
@@ -202,7 +201,7 @@ if __name__ == '__main__':
     # for i in range(model_input.shape[2]):
     #     print(model_input[:, :, i])
 
-    # from keras.utils.vis_utils import plot_model
+    from keras.utils.vis_utils import plot_model
     model = ResidualCNN()
     # test for saving
     model.model.summary()

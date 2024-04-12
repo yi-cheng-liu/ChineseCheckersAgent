@@ -15,13 +15,12 @@ class GreedyDataGenerator:
     def __init__(self, randomised=False, random_start=False):
         self.cur_player = GreedyPlayer(player_num=1)
         self.next_player = GreedyPlayer(player_num=2)
-        self.last_player = GreedyPlayer(player_num=3)
         self.randomised = randomised
         self.random_start = random_start
         self.board = Board(randomised=randomised)
 
     def swap_players(self):
-        self.cur_player, self.next_player, self.last_player = self.next_player, self.last_player, self.cur_player
+        self.cur_player, self.next_player = self.next_player, self.cur_player
 
     def generate_play(self):
         play_history = []
@@ -69,7 +68,7 @@ class GreedyDataGenerator:
 
             self.swap_players()
 
-        reward = utils.get_winloss_reward(self.board, final_winner)
+        reward = utils.get_p1_winloss_reward(self.board, final_winner)
 
         # Reset generator for next game
         self.board = Board(randomised=self.randomised)

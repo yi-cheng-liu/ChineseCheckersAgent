@@ -25,7 +25,7 @@ def load_agent(model_path, verbose=False):
 
 def human_agent_match(model_path, verbose=False, tree_tau=DET_TREE_TAU):
     model = load_agent(model_path)
-    game = Game(p1_type='ai', p2_type='human', p3_type='ai', verbose=verbose, model1=model)
+    game = Game(p1_type='ai', p2_type='human', verbose=verbose, model1=model)
     winner = game.start()
     return winner
 

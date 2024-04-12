@@ -330,3 +330,22 @@ class Board:
 
         return distance
 
+
+
+if __name__ == '__main__':
+    """
+    Put board.py testcases here
+    """
+    board = Board()
+    board.visualise()
+    # print(board.board[board.checker_pos[PLAYER_ONE][0][0],
+    # board.checker_pos[PLAYER_ONE][0][1], 0])
+    #
+    # print(board.board[6, 0, 0])
+    # print(board.board)
+    # board.print_board()
+    # print(board.get_valid_moves(1))
+    # print(board.check_win())
+    # print(board.check_win())
+    # for i in range(50000):
+    # board.place()
