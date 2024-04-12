@@ -86,7 +86,10 @@ class MCTS:
             for edge in breadcrumbs:
                 # If a win state occurred, then then leafNode must be the turn of the lost player
                 # Therefore when backing up, the leafNode player gets negative reward
-                direction = -1 if edge.currPlayer == leafNode.currPlayer else 1
+                if edge.currPlayer == leafNode.currPlayer - 1 or (leafNode.currPlayer == 1 and edge.currPlayer == 6):
+                    direction = 1
+                else:
+                    direction = -1
                 edge.stats['N'] += 1
                 edge.stats['W'] += REWARD['win'] * direction
                 edge.stats['Q'] = edge.stats['W'] / float(edge.stats['N'])  # Use float() for python2 compatibility
